@@ -27,26 +27,26 @@ bool CPipeline::Init(int argc, char ** argv)
     uint str_len = uint(out_string2.size());
     string line_string = SEP_LINE;
 
-    for(uint i = 0; i < str_len; i++)
-    {
-        cout << line_string.substr(0, i) << "| \r" << flush;
-        mf.sleep(LINE_DELAY);
-    }
+    // for(uint i = 0; i < str_len; i++)
+    // {
+        // cout << line_string.substr(0, i) << "| \r" << flush;
+        // mf.sleep(LINE_DELAY);
+    // }
     cout << SEP_LINE;
 
-    for(uint i = 0; i <= str_len / 4; i++)
-    {
-        cout << out_string2.substr(0, i) << "| \r" << flush;
-        mf.sleep(LINE_DELAY);
-    }
+    // for(uint i = 0; i <= str_len / 4; i++)
+    // {
+        // cout << out_string2.substr(0, i) << "| \r" << flush;
+        // mf.sleep(LINE_DELAY);
+    // }
 
     cout << out_string2 << endl;
 
-    for(uint i = 0; i < str_len; i++)
-    {
-        cout << line_string.substr(0, i) << "| \r" << flush;
-        mf.sleep(LINE_DELAY);
-    }
+    // for(uint i = 0; i < str_len; i++)
+    // {
+        // cout << line_string.substr(0, i) << "| \r" << flush;
+        // mf.sleep(LINE_DELAY);
+    // }
     cout << SEP_LINE;
 
     if(argc != 2)
@@ -1303,6 +1303,7 @@ void CPipeline::printParameters(parameters & param, uint max_id)
         case CMD_SYNCHROTRON:
             cout << "- Command          : SYNCHROTRON EMISSION" << endl;
             printPathParameters(param);
+            printVerbose(param);
             printSourceParameters(param);
             printConversionParameters(param);
             printDetectorParameters(param);

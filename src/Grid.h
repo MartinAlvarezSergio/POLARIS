@@ -523,6 +523,8 @@ class CGridBasic
         numberDensityTab = 0;
         totalCellEmissionTab = 0;
         max_wavelengths = 0;
+
+        wrong_border = 0;
     }
 
     double getCextMeanTab(uint cellID, uint wID) const;
@@ -616,6 +618,8 @@ class CGridBasic
     virtual void printParameters() = 0;
 
     virtual bool goToNextCellBorder(photon_package * pp) = 0;
+
+    virtual uint getWrongBorder() = 0;
 
     virtual bool updateShortestDistance(photon_package * pp)
     {
@@ -3954,6 +3958,8 @@ class CGridBasic
     double * numberDensityTab;
     double * totalCellEmissionTab;
     uint max_wavelengths;
+
+    uint wrong_border;
 };
 
 #endif

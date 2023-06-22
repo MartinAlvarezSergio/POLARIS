@@ -2020,6 +2020,10 @@ bool CRadiativeTransfer::calcSyncMapsViaRaytracing(parameters & param)
     // Get maximum length of the simulation model
     double max_length = grid->getMaxLength();
 
+    // Determine code verbosity for execution
+    bool verbose = param.getVerbose();
+    uint wrong_cell = grid->getWrongBorder();
+
     if(!sync_ray_detectors.empty())
     {
         for(uint i_det = start; i_det <= stop; i_det++)
@@ -2038,9 +2042,16 @@ bool CRadiativeTransfer::calcSyncMapsViaRaytracing(parameters & param)
             float last_percentage = 0;
 
             // Show information about the current detector
+            if (verbose)
+            {
             cout << CLR_LINE;
             cout << "-> Ray tracing synchrotron map(s) (Seq. " << i_det + 1 << ", source: " << sID + 1
                  << ") 0.0 [%]   \r" << flush;
+            }
+            else
+            {
+                cout << "-> Ray tracing synchrotron map(s)..." << endl;
+            }
 
             // Calculate pixel intensity for each pixel
 #pragma omp parallel for schedule(dynamic)
@@ -2060,7 +2071,18 @@ bool CRadiativeTransfer::calcSyncMapsViaRaytracing(parameters & param)
                 float percentage = 100.0 * float(per_counter) / float(per_max);
 
                 // Show only new percentage number if it changed
-                if((percentage - last_percentage) > PERCENTAGE_STEP)
+                if ((percentage - last_percentage) > PERCENTAGE_STEP && verbose)
+                {
+                    #pragma omp critical
+                    {
+                        std::cout << "-> Ray tracing synchrotron map(s) (Seq. " << i_det + 1
+                                  << ", source: " << sID + 1 << ")  "
+                                  << float(100.0 * float(per_counter) / float(per_max)) << " [%]         \r"
+                                  << std::flush;
+                        last_percentage = percentage;
+                    }
+                }
+                if((percentage - last_percentage) > PERCENTAGE_STEP && verbose)
                 {
 #pragma omp critical
                     {
@@ -2085,6 +2107,12 @@ bool CRadiativeTransfer::calcSyncMapsViaRaytracing(parameters & param)
             if(!tracer[i_det]->writeSyncResults())
                 return false;
         }
+    }
+
+    wrong_cell = grid->getWrongBorder();
+    if (!verbose && (wrong_cell > 0))
+    {        
+        cout << "ERROR: Wrong cell border for ncell=" << wrong_cell << "!" << endl;
     }
 
     // Show that raytracing is finished
@@ -2994,7 +3022,7 @@ bool CRadiativeTransfer::calcOPIATEMapsViaRaytracing(parameters& param)
             float percentage = 100.0 * float(per_counter) / float(per_max);
 
             // Show only new percentage number if it changed
-            if((percentage - last_percentage) > PERCENTAGE_STEP)
+	    if((percentage - last_percentage) > PERCENTAGE_STEP)
             {
 #pragma omp critical
                 {
@@ -3003,7 +3031,7 @@ bool CRadiativeTransfer::calcOPIATEMapsViaRaytracing(parameters& param)
                     last_percentage = percentage;
                 }
             }
-
+	    
             // Get radiative transfer results for one pixel/ray
             getOPIATEPixelIntensity(tmp_source, cx, cy, 0, 0, i_det, uint(0), i_pix);
             //getLinePixelIntensity(tmp_source, cx, cy, i_species, i_trans, i_det, uint(0), i_pix);

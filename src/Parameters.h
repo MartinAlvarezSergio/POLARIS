@@ -9,6 +9,7 @@ class parameters
   public:
     parameters()
     {
+        verbose = true; 
         path_grid = "";
         path_output = "";
         // phID = PH_HG;
@@ -265,6 +266,11 @@ class parameters
     double getStarMass(uint i) const
     {
         return star_mass[i];
+    }
+
+    bool getVerbose() const
+    {
+        return verbose;
     }
 
     string getPathGrid() const
@@ -957,6 +963,11 @@ class parameters
         star_mass = val;
     }
 
+    void setVerbose(bool val)
+    {
+        verbose = val;
+    }
+    
     void setPathGrid(string val)
     {
         path_grid = val;
@@ -2218,6 +2229,7 @@ class parameters
 
   private:
     int cmd;
+    bool verbose;
     string path_grid;
     string path_input;
     string path_output;

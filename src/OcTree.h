@@ -153,6 +153,9 @@ class CGridOcTree : public CGridBasic
 
         rot_angle1 = 0;
         rot_angle2 = 0;
+
+        verbose_oct=true;
+        wrong_border=0;
     }
 
     ~CGridOcTree()
@@ -231,9 +234,16 @@ class CGridOcTree : public CGridBasic
         cell_list = new cell_basic *[max_cells];
         ulong pos_counter = 0;
         goToRoot();
-        cout << CLR_LINE;
-        cout << "-> Creating cell list    : 0 [%]           \r";
 
+        if (verbose_oct)
+        {
+            cout << CLR_LINE;
+            cout << "-> Creating cell list    : 0 [%]           \r";
+        }
+        else
+        {
+            cout << "-> Creating cell list..." << endl;    
+        }
         while(nextLowLevelCell())
         {
 #pragma warning(suppress : 6386)
@@ -244,7 +254,7 @@ class CGridOcTree : public CGridBasic
             cell_oc_pos->setUniqueID(pos_counter);
 
             pos_counter++;
-            if(pos_counter % 15000 == 0)
+            if(pos_counter % 15000 == 0 && verbose_oct)
                 cout << "-> Creating cell list     : " << 100.0 * float(pos_counter) / float(max_cells)
                      << " [%]        \r" << flush;
         }
@@ -321,6 +331,16 @@ class CGridOcTree : public CGridBasic
     double getMaxLength()
     {
         return cell_oc_root->getLength();
+    }
+
+    uint getWrongBorder()
+    {
+        return wrong_border;
+    }
+
+    void setVerboseOct(bool val)
+    {
+        verbose_oct = val;
     }
 
     void printParameters();
@@ -437,6 +457,8 @@ class CGridOcTree : public CGridBasic
     Matrix3D datmz;
 
     uint nx;
+    bool verbose_oct;
+    uint wrong_border;
     // uint ny;
     // uint nz;
     double f_min;

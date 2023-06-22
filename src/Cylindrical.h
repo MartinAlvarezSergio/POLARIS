@@ -414,6 +414,11 @@ class CGridCylindrical : public CGridBasic
         return max(Rmax, Zmax);
     }
 
+    uint getWrongBorder()
+    {
+        return 0;
+    }
+
     bool createArtificialGrid(string path);
 
     bool saveBinaryGridFile(string filename)

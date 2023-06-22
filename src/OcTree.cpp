@@ -462,6 +462,12 @@ bool CGridOcTree::loadGridFromBinrayFile(parameters & param, uint _data_len)
     string filename = param.getPathGrid();
     float tmp_data;
 
+    // Determine code verbosity for execution
+    bool verbose = param.getVerbose();
+
+    verbose_oct=verbose;
+    setVerboseOct(verbose);
+
     line_counter = 0;
     char_counter = 0;
 
@@ -551,11 +557,16 @@ bool CGridOcTree::loadGridFromBinrayFile(parameters & param, uint _data_len)
     cell_oc_root->setLength(max_len);
     cell_oc_root->setLevel(0);
 
+    if (! verbose)
+    {
+        cout << "-> Loading octree grid file..." << endl;
+    }
+
     while(!bin_reader.eof())
     {
         line_counter++;
 
-        if(line_counter % 5000 == 0)
+        if((line_counter % 5000 == 0) && verbose)
         {
             char_counter++;
             cout << "-> Loading octree grid file: " << ru[(unsigned int)char_counter % 4] << "           \r";
@@ -1706,7 +1717,14 @@ bool CGridOcTree::goToNextCellBorder(photon_package * pp)
 
     if(!hit)
     {
-        cout << "\nERROR: Wrong cell border!                                   " << endl;
+        if (verbose_oct)
+        {
+            cout << "\nERROR: Wrong cell border!                                   " << endl;
+        }
+        else
+        {
+            wrong_border+=1;
+        }
         return false;
     }
 
@@ -2044,7 +2062,14 @@ bool CGridOcTree::findStartingPoint(photon_package * pp)
 
     if(!hit)
     {
-        cout << "\nERROR: Wrong cell border!                                   " << endl;
+        if (verbose_oct)
+        {
+            cout << "\nERROR: Wrong cell border!                                   " << endl;
+        }
+        else
+        {
+            wrong_border+=1;
+        }
         return false;
     }
 
@@ -2058,7 +2083,7 @@ void CGridOcTree::clear(cell_oc * cell)
     if(cell->getChildren() != 0)
     {
         line_counter++;
-        if(line_counter % 15000 == 0)
+        if(line_counter % 15000 == 0 && verbose_oct)
         {
             char_counter++;
             cout << " -> Final cleanup: " << ru[(unsigned int)char_counter % 4] << "              \r";

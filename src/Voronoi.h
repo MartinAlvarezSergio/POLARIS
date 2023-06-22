@@ -268,6 +268,11 @@ class CGridVoronoi : public CGridBasic
         return max_len;
     }
 
+    uint getWrongBorder()
+    {
+        return 0;
+    }
+
     bool saveBinaryGridFile(string filename)
     {
         return saveBinaryGridFile(filename, GRID_ID_VOR, data_offset);

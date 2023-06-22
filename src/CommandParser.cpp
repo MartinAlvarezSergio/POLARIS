@@ -351,6 +351,7 @@ bool CCommandParser::parse()
             continue;
         }
 
+
         if(command.compare("<task>") == 0)
         {
             if(task_id == -id_tsk)
@@ -2844,6 +2845,13 @@ bool CCommandParser::parseLine(parameters * param, string cmd, string data, uint
         return true;
     }
 
+    if(cmd.compare("<verbose>") == 0)
+    {
+        bool b = atob(atoi(data.c_str()));
+        param->setVerbose(b);
+        return true;
+    }
+    
     if(cmd.compare("<path_grid>") == 0)
     {
         string path = seperateString(data);

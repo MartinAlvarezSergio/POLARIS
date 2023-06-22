@@ -166,6 +166,11 @@ class CPipeline
         cout << "- Relative molecular mass (mu) : " << param.getMu() << endl;
     }
 
+    void printVerbose(parameters & param)
+    {
+        cout << "- Verbosity        : " << param.getVerbose() << endl;
+    }
+
     void printPathParameters(parameters & param)
     {
         cout << "- Path grid file   : " << param.getPathGrid() << endl;
