@@ -197,7 +197,7 @@ syn_param CSynchrotron::get_Power_Law_Parameter(double n_e,
 
     n_e *= 1e-6; // n_e in 1/ccm
 
-    B *= 1e4; // B in mu Gauss
+    B *= 1e4; // B in mu Gauss // SMA: this conversion is to Gauss, not mu Gauss
 
     double nu = con_c / l;
     double nu_c = syn_e * B / (PIx2 * syn_me * syn_c);
@@ -235,13 +235,14 @@ syn_param CSynchrotron::get_Power_Law_Parameter(double n_e,
 
     res.j_I = (n_e * syn_e * syn_e * nu_c) / syn_c * pow(3.0, 0.5 * p) * (p - 1.0) * sin_theta * gammas *
               pow(nu / (nu_c * sin_theta), -(p - 1.0) / 2.0);
-    res.j_Q = -res.j_I * getI_Q_p(p);
-    res.j_V = res.j_I / sqrt(nu / (3. * nu_c * sin_theta)) * getI_V_p(p, tan_theta);
+    res.j_Q = -res.j_I * getI_Q_p(p); // SMA: Why is there an extra -1 here? There's already one within getI_Q_p???
+    res.j_V = res.j_I / sqrt(nu / (3. * nu_c * sin_theta)) * getI_V_p(p, tan_theta); // SMA: similarly, this j_V is missing a minus sign???
 
     // additional correction for g_min>1 (see Reissl et al. 2018)
-    res.j_I /= (g_min * g_min);
-    res.j_Q /= (g_min * g_min);
-    res.j_V /= (g_min * g_min);
+    double gmin_den = pow(g_min, 1 - p);
+    res.j_I *= gmin_den; // res.j_I /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
+    res.j_Q *= gmin_den; // res.j_Q /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
+    res.j_V *= gmin_den; // res.j_V /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
 
     double du = sqrt(res.j_I * res.j_I - res.j_Q * res.j_Q);
 
@@ -272,9 +273,9 @@ syn_param CSynchrotron::get_Power_Law_Parameter(double n_e,
                        // * log(g_min)/tan_theta;
 
     // additional correction for g_min>1 (see Reissl et al. 2018)
-    res.alpha_I /= (g_min * g_min);
-    res.alpha_Q /= (g_min * g_min);
-    res.alpha_V /= (g_min * g_min);
+    res.alpha_I *= gmin_den; //res.alpha_I /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
+    res.alpha_Q *= gmin_den; //res.alpha_Q /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
+    res.alpha_V *= gmin_den; //res.alpha_V /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
 
     // converting back into SI;
     res.scale();

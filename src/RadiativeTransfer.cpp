@@ -2214,9 +2214,15 @@ void CRadiativeTransfer::getSyncIntensity(photon_package * pp,
             // Set current index in photon package
             pp->setSpectralID(i_wave + i_extra * nr_used_wavelengths);
 
-            // Get wavelength/frequency of the photon package
-            double mult = 1e+26 * subpixel_fraction * tracer[i_det]->getDistanceFactor() * con_c /
+
+            // Get wavelength/frequency of the photon package 
+            // SMA: Wrong conversion within synchrotrong, assumes SI / m to Jy / m, but the synchrotron module is not in SI
+            // SMA: double mult = 1e+26 * subpixel_fraction * tracer[i_det]->getDistanceFactor() * con_c /
+            // SMA:   (pp->getFrequency() * pp->getFrequency());
+            // SMA: Correct conversion corresponds to CGS to SI first (1e3), then SI / m to Jy / m
+            double mult = 1e+3 * 1e+26 * subpixel_fraction * tracer[i_det]->getDistanceFactor() * con_c /
                           (pp->getFrequency() * pp->getFrequency());
+
 
             // Include foreground extinction if necessary
             mult *= dust->getForegroundExtinction(tracer[i_det]->getWavelength(pp->getWavelength()));

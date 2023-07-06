@@ -11,10 +11,13 @@
 #define syn_e 4.80320680e-10 // electron charge    [Statcoulomb]
 #define syn_h 6.6260693e-27  // Planck constant    [erg/s]
 #define syn_kB 1.380662e-16  // Boltzmann constant [erg/K]
-#define syn_c 2.99792458e10  // speed of light     [m/s]
+#define syn_c 2.99792458e10  // speed of light     [cm/s]
 
 // conversion factor 1/cm -> 1/m
 #define syn_SI 100.0
+// SMA: conversion factor 100.0 (1/cm -> 1/m) * 1000.0 (erg s^-1 cm^-2 Hz^-1 -> W m^-2 Hz^-1) 
+// SMA: This is done in RadiativeTransfer.cpp 
+// #define syn_SI 100000.0
 
 // container class for the parameters of sync. RT
 class syn_param
