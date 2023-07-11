@@ -351,7 +351,6 @@ class CRaytracingBasic
     {
         return 1 / (getDistance() * getDistance());
     }
-
     double getDistanceFactor(Vector3D pos)
     {
         return 1.0 / (getDistance(pos) * (getDistance(pos)));
