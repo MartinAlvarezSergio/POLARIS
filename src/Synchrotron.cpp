@@ -240,9 +240,15 @@ syn_param CSynchrotron::get_Power_Law_Parameter(double n_e,
 
     // additional correction for g_min>1 (see Reissl et al. 2018)
     double gmin_den = pow(g_min, 1 - p);
+<<<<<<< HEAD
     res.j_I *= gmin_den; // res.j_I /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
     res.j_Q *= gmin_den; // res.j_Q /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
     res.j_V *= gmin_den; // res.j_V /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
+=======
+    res.j_I *= gmin_den; 
+    res.j_Q *= gmin_den; 
+    res.j_V *= gmin_den; 
+>>>>>>> tmp
 
     double du = sqrt(res.j_I * res.j_I - res.j_Q * res.j_Q);
 
@@ -273,9 +279,9 @@ syn_param CSynchrotron::get_Power_Law_Parameter(double n_e,
                        // * log(g_min)/tan_theta;
 
     // additional correction for g_min>1 (see Reissl et al. 2018)
-    res.alpha_I *= gmin_den; //res.alpha_I /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
-    res.alpha_Q *= gmin_den; //res.alpha_Q /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
-    res.alpha_V *= gmin_den; //res.alpha_V /= (g_min * g_min); // SMA: old was hardcoded for p = 3.0
+    res.alpha_I *= gmin_den; 
+    res.alpha_Q *= gmin_den; 
+    res.alpha_V *= gmin_den; 
 
     // converting back into SI;
     res.scale();
