@@ -492,9 +492,10 @@ class CSynchrotron
 
     double Gamma_A_p(double g_min, double g_max, double p)
     {
-        return Gamma((3. * p + 2.) / 12.) * Gamma((3. * p + 22.) / 12.) /
+        return Gamma((3. * p + 12.) / 12.) * Gamma((3. * p + 22.) / 12.) /
                (4. * (pow(g_min, 1. - p) - pow(g_max, 1. - p)));
     }
+    
 
     double getI_Q_p(double p)
     {
