@@ -897,6 +897,8 @@ bool CDustComponent::readDustRefractiveIndexFile(parameters & param,
     // Init error check
     bool error = false;
 
+    double max_diff = 0.0;
+
     // Init maximum counter value
     uint max_counter = nr_of_dust_species * nr_of_wavelength;
 
@@ -1067,7 +1069,7 @@ bool CDustComponent::readDustRefractiveIndexFile(parameters & param,
                 delete[] S33_start;
                 delete[] S34_start;
 
-                uint nr_or_scat_theta_final = scat_angle_final.size();
+                uint nr_of_scat_theta_final = scat_angle_final.size();
 
                 // Set missing Efficiencies for other axis
                 Qext2[a][w] = Qext1[a][w];
@@ -1078,15 +1080,23 @@ bool CDustComponent::readDustRefractiveIndexFile(parameters & param,
                 if(scat_theta[a][w] != 0){
                     delete[] scat_theta[a][w];
                 }
-                scat_theta[a][w] = new double[nr_or_scat_theta_final];
+
+                double diff_tmp;
+                for(uint sth = 1; sth < nr_of_scat_theta_final; sth++)
+                {
+                    diff_tmp = (S11_final[sth-1] - S11_final[sth]) / max(S11_final[sth-1], S11_final[sth]);
+                    max_diff = max(diff_tmp, max_diff);
+                }
+
+                scat_theta[a][w] = new double[nr_of_scat_theta_final];
 
                 for(uint inc = 0; inc < nr_of_incident_angles; inc++)
                 {
                     sca_mat[a][w][inc] = new Matrix2D*[nr_of_scat_phi];
                     for(uint sph = 0; sph < nr_of_scat_phi; sph++)
                     {
-                        sca_mat[a][w][inc][sph] = new Matrix2D[nr_or_scat_theta_final];
-                        for(uint sth = 0; sth < nr_or_scat_theta_final; sth++)
+                        sca_mat[a][w][inc][sph] = new Matrix2D[nr_of_scat_theta_final];
+                        for(uint sth = 0; sth < nr_of_scat_theta_final; sth++)
                         {
                             sca_mat[a][w][inc][sph][sth].resize(4, 4);
 
@@ -1112,7 +1122,7 @@ bool CDustComponent::readDustRefractiveIndexFile(parameters & param,
                 S33_final.clear();
                 S34_final.clear();
 
-                nr_of_scat_theta[a][w] = nr_or_scat_theta_final;
+                nr_of_scat_theta[a][w] = nr_of_scat_theta_final;
             }
             else
             {
@@ -1144,6 +1154,16 @@ bool CDustComponent::readDustRefractiveIndexFile(parameters & param,
         cout << "ERROR: Problem with optical properties calculation" << endl;
         return false;
     }
+
+    printIDs();
+    cout << "- calculating optical properties: done          " << endl;
+
+    if(max_diff > 0.5) // arbitrary limit
+    {
+        cout << "WARNING: number of scattering angles might be too low (max diff = " << max_diff << ")" << endl;
+        cout << "if required, increase 'NANG' or decrease 'MAX_MIE_SCA_REL_DIFF' (for x < 100) in src/Typedefs.h " << endl;
+    }
+
     return true;
 }
 
@@ -2346,7 +2366,7 @@ bool CDustComponent::writeComponent(string path_data, string path_plot)
         // Init text file writer for scattering matrix
         ofstream scat_writer(path_scat.c_str());
 
-        uint nr_of_scat_theta = 2 * NANG - 1;
+        uint nr_of_scat_theta_tmp = 2 * NANG - 1;
 
         // Error message if the write does not work
         if(scat_writer.fail())
@@ -2371,9 +2391,9 @@ bool CDustComponent::writeComponent(string path_data, string path_plot)
         for(uint w = wavelength_offset; w < nr_of_wavelength; w++)
         {
             uint wID = w - wavelength_offset;
-            S11[wID] = new double[nr_of_scat_theta];
-            S12[wID] = new double[nr_of_scat_theta];
-            for(uint sth = 0; sth < nr_of_scat_theta; sth++)
+            S11[wID] = new double[nr_of_scat_theta_tmp];
+            S12[wID] = new double[nr_of_scat_theta_tmp];
+            for(uint sth = 0; sth < nr_of_scat_theta_tmp; sth++)
             {
                 // Init and reset variables
                 double sum = 0;
@@ -2382,7 +2402,7 @@ bool CDustComponent::writeComponent(string path_data, string path_plot)
                 double * S12_tmp = new double[nr_of_dust_species];
                 for(uint a = 0; a < nr_of_dust_species; a++)
                 {
-                    if(sizeIndexUsed(a))
+                    if(sizeIndexUsed(a) && nr_of_scat_theta[a][w] != 0)
                     {
                         double Csca_tmp = getCscaMean(a, w);
                         sum += Csca_tmp;
@@ -2426,7 +2446,7 @@ bool CDustComponent::writeComponent(string path_data, string path_plot)
         scat_writer << "set multiplot layout 2,1 rowsfirst" << endl;
 
         if(nr_of_wavelength > 1)
-            scat_writer << "set xrange[" << 0 << ":" << nr_of_scat_theta << "]" << endl;
+            scat_writer << "set xrange[" << 0 << ":" << nr_of_scat_theta_tmp << "]" << endl;
         scat_writer << "set yrange[" << S11min << ":" << S11max << "]" << endl;
         scat_writer << "set format x \"%.1f\"" << endl;
         scat_writer << "set format y \"%.1te%02T\"" << endl;
@@ -2447,13 +2467,13 @@ bool CDustComponent::writeComponent(string path_data, string path_plot)
         {
             uint wID = w - wavelength_offset;
 
-            for(uint sth = 0; sth < nr_of_scat_theta; sth++)
+            for(uint sth = 0; sth < nr_of_scat_theta_tmp; sth++)
                 scat_writer << sth << "\t" << S11[wID][sth] << endl;
             scat_writer << "e" << endl;
         }
 
         if(nr_of_wavelength > 1)
-            scat_writer << "set xrange[" << 0 << ":" << nr_of_scat_theta << "]" << endl;
+            scat_writer << "set xrange[" << 0 << ":" << nr_of_scat_theta_tmp << "]" << endl;
         scat_writer << "set yrange[" << S12min << ":" << S12max << "]" << endl;
         scat_writer << "set format x \"%.1f\"" << endl;
         scat_writer << "set format y \"%.1te%02T\"" << endl;
@@ -2474,7 +2494,7 @@ bool CDustComponent::writeComponent(string path_data, string path_plot)
         {
             uint wID = w - wavelength_offset;
 
-            for(uint sth = 0; sth < nr_of_scat_theta; sth++)
+            for(uint sth = 0; sth < nr_of_scat_theta_tmp; sth++)
                 scat_writer << sth << "\t" << S12[wID][sth] << endl;
             scat_writer << "e" << endl;
         }
@@ -2722,17 +2742,17 @@ void CDustComponent::preCalcAbsorptionRates()
         if(calorimetry_loaded)
             tab_em_inv[a].createSpline();
 
-#pragma omp critical
-        {
-            // Show progress
-            if(per_counter % 2 == 0)
-            {
-                printIDs();
-                cout << "- pre-calculation of absorption rates: "
-                     << 100.0 * float(per_counter) / float(nr_of_dust_species - 1)
-                     << " [%]                         \r";
-            }
-        }
+// #pragma omp critical
+//         {
+//             // Show progress
+//             if(per_counter % 2 == 0)
+//             {
+//                 printIDs();
+//                 cout << "- pre-calculation of absorption rates: "
+//                      << 100.0 * float(per_counter) / float(nr_of_dust_species - 1)
+//                      << " [%]                         \r";
+//             }
+//         }
 
         // Increase progress counter
         per_counter++;
@@ -2811,17 +2831,17 @@ void CDustComponent::preCalcMieScatteringProb()
                 delete[] tmp_scat_frac;
             }
 
-#pragma omp critical
-            {
-                // Show progress
-                if(per_counter % 2 == 0)
-                {
-                    printIDs();
-                    cout << "- pre-calculation of Mie probabilities: "
-                        << 100.0 * float(per_counter) / float(nr_of_dust_species - 1)
-                        << " [%]                         \r";
-                }
-            }
+// #pragma omp critical
+//             {
+//                 // Show progress
+//                 if(per_counter % 2 == 0)
+//                 {
+//                     printIDs();
+//                     cout << "- pre-calculation of Mie probabilities: "
+//                         << 100.0 * float(per_counter) / float(nr_of_dust_species - 1)
+//                         << " [%]                         \r";
+//                 }
+//             }
 
             // Increase progress counter
             per_counter++;
@@ -2882,16 +2902,16 @@ void CDustComponent::preCalcWaveProb()
             delete[] pl_mean[a];
         delete[] pl_mean;
 
-#pragma omp critical
-        {
-            // Show progress
-            if(per_counter % 10 == 0)
-            {
-                printIDs();
-                cout << "- precalculation of wavelength-probabilities: "
-                     << 100.0 * float(per_counter) / float(nr_of_temperatures - 1) << " [%]           \r";
-            }
-        }
+// #pragma omp critical
+//         {
+//             // Show progress
+//             if(per_counter % 10 == 0)
+//             {
+//                 printIDs();
+//                 cout << "- precalculation of wavelength-probabilities: "
+//                      << 100.0 * float(per_counter) / float(nr_of_temperatures - 1) << " [%]           \r";
+//             }
+//         }
 
         // Increase progress counter
         per_counter++;
@@ -2929,9 +2949,9 @@ void CDustComponent::preCalcTemperatureLists(double minTemp, double maxTemp, uin
         tab_planck[w].resize(nr_of_temperatures);
 
         // Show progress
-        printIDs();
-        cout << "- pre-calculation of Planck functions: " << 100.0 * float(w) / float(nr_of_wavelength)
-             << "                                \r";
+        // printIDs();
+        // cout << "- pre-calculation of Planck functions: " << 100.0 * float(w) / float(nr_of_wavelength)
+        //      << "                                \r";
 
         // Set each entry of tab_planck with the corresponding Planck function values
         // that depend on the temperature
@@ -3079,7 +3099,7 @@ bool CDustComponent::add(double ** size_fraction, CDustComponent * comp, uint **
         nr_of_scat_phi = comp->getNrOfScatPhi();
         nr_of_scat_mat_elements = comp->getNrOfScatMatElements();
         nr_of_calorimetry_temperatures = comp->getNrOfCalorimetryTemperatures();
-        f_cor = comp->getCorrelationFactor();
+        f_cor = comp->getFcorr();
         f_highJ = comp->getFHighJ();
 
         // Init dust properties to be filled with grain properties
@@ -5106,6 +5126,7 @@ bool CDustMixture::createDustMixtures(parameters & param, string path_data, stri
             // Get material density and similar user defined parameters
             single_component[i_comp].setMaterialDensity(param.getMaterialDensity(dust_component_choice));
             single_component[i_comp].setFHighJ(param.getFHighJ());
+            single_component[i_comp].setFcorr(param.getFcorr());
             single_component[i_comp].setQref(param.getQref());
             single_component[i_comp].setAlphaQ(param.getAlphaQ());
 
@@ -5186,6 +5207,7 @@ void CDustMixture::printParameters(parameters & param, CGridBasic * grid)
 
     // Show title
     cout << CLR_LINE;
+    cout << SEP_LINE;
     cout << "Dust parameters                                                             "
             "            "
          << endl;

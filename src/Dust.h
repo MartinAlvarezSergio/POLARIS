@@ -85,7 +85,7 @@ class CDustComponent
         min_a_alig = 1e200;
         max_a_alig = 0;
         f_highJ = 0.25;
-        f_cor = 0;
+        f_cor = 0.6;
         delta_rat = 2;
         mu = 0;
         avg_mass = 0;
@@ -205,6 +205,9 @@ class CDustComponent
                 delete[] enthalpy[a];
             delete[] enthalpy;
         }
+        if(sca_mat != 0)
+            cleanScatteringData();
+
         if(nr_of_scat_theta != 0)
         {
             for(uint a = 0; a < nr_of_dust_species; a++)
@@ -279,9 +282,6 @@ class CDustComponent
             delete[] sca_prob;
         if(abs_prob != 0)
             delete[] abs_prob;
-
-        if(sca_mat != 0)
-            cleanScatteringData();
 
         if(a_eff != 0)
             delete[] a_eff;
@@ -1118,13 +1118,16 @@ class CDustComponent
                 {
                     for(uint w = 0; w < nr_of_wavelength; w++)
                     {
-                        for(uint inc = 0; inc < nr_of_incident_angles; inc++)
+                        if(nr_of_scat_theta[a][w] != 0)
                         {
-                            for(uint sph = 0; sph < nr_of_scat_phi; sph++)
-                                delete[] sca_mat[a][w][inc][sph];
-                            delete[] sca_mat[a][w][inc];
+                            for(uint inc = 0; inc < nr_of_incident_angles; inc++)
+                            {
+                                for(uint sph = 0; sph < nr_of_scat_phi; sph++)
+                                    delete[] sca_mat[a][w][inc][sph];
+                                delete[] sca_mat[a][w][inc];
+                            }
+                            delete[] sca_mat[a][w];
                         }
-                        delete[] sca_mat[a][w];
                     }
                     delete[] sca_mat[a];
                 }
@@ -1706,6 +1709,11 @@ class CDustComponent
         f_highJ = val;
     }
 
+    void setFcorr(double val)
+    {
+        f_cor = val;
+    }
+
     void setQref(double val)
     {
         Q_ref = val;
@@ -2098,7 +2106,7 @@ class CDustComponent
         return f_highJ;
     }
 
-    double getCorrelationFactor() const
+    double getFcorr() const
     {
         return f_cor;
     }
