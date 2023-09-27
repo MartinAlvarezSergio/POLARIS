@@ -1788,14 +1788,14 @@ void CRadiativeTransfer::convertTempInQB(double min_gas_density, bool use_gas_te
 #pragma omp atomic update
         pos_counter++;
 
-        if(pos_counter % 10000 == 0)
-        {
-#pragma omp critical
-            {
-                cout << "-> Converting emissivities: " << 100.0 * float(pos_counter) / float(max_cells)
-                     << " [%]       \r";
-            }
-        }
+//         if(pos_counter % 10000 == 0)
+//         {
+// #pragma omp critical
+//             {
+//                 cout << "-> Converting emissivities: " << 100.0 * float(pos_counter) / float(max_cells)
+//                      << " [%]       \r";
+//             }
+//         }
     }
 
     cout << CLR_LINE;
@@ -2106,6 +2106,14 @@ bool CRadiativeTransfer::calcSyncMapsViaRaytracing(parameters & param)
             // Write results either as text or fits file
             if(!tracer[i_det]->writeSyncResults())
                 return false;
+
+            if(tracer[i_det]->getSubpixelWarning())
+            {
+                cout << "WARNING: level of subpixeling (" << param.getMaxSubpixelLvl() << ") might be too low" << endl;
+                cout << "if required, increase the maximum level of subpixeling with <max_subpixel_lvl> in the command file" << endl;
+            }
+            if(tracer[i_det]->getDetectorShape() == DET_PLANE && (grid->getDataID() == GRID_ID_SPH || grid->getDataID() == GRID_ID_CYL))
+                cout << "HINT: a 'polar' detector should be used for a spherical or cylindrical grid" << endl;
         }
     }
 
@@ -2595,6 +2603,14 @@ bool CRadiativeTransfer::calcPolMapsViaRaytracing(parameters & param)
             // Write results either as text or fits file
             if(!tracer[i_det]->writeDustResults(ray_result_type))
                 return false;
+
+            if(tracer[i_det]->getSubpixelWarning())
+            {
+                cout << "WARNING: level of subpixeling (" << param.getMaxSubpixelLvl() << ") might be too low" << endl;
+                cout << "if required, increase the maximum level of subpixeling with <max_subpixel_lvl> in the command file" << endl;
+            }
+            if(tracer[i_det]->getDetectorShape() == DET_PLANE && (grid->getDataID() == GRID_ID_SPH || grid->getDataID() == GRID_ID_CYL))
+                cout << "HINT: a 'polar' detector should be used for a spherical or cylindrical grid" << endl;
         }
     }
 
@@ -3043,6 +3059,13 @@ bool CRadiativeTransfer::calcOPIATEMapsViaRaytracing(parameters& param)
         if(!tracer[i_det]->writeOpiateResults(op))
             return false;
 
+        if(tracer[i_det]->getSubpixelWarning())
+        {
+            cout << "WARNING: level of subpixeling (" << param.getMaxSubpixelLvl() << ") might be too low" << endl;
+            cout << "if required, increase the maximum level of subpixeling with <max_subpixel_lvl> in the command file" << endl;
+        }
+        if(tracer[i_det]->getDetectorShape() == DET_PLANE && (grid->getDataID() == GRID_ID_SPH || grid->getDataID() == GRID_ID_CYL))
+            cout << "HINT: a 'polar' detector should be used for a spherical or cylindrical grid" << endl;
     }
 
     cout << CLR_LINE;
@@ -3167,6 +3190,14 @@ bool CRadiativeTransfer::calcChMapsViaRaytracing(parameters & param)
 
             if(!tracer[i_det]->writeLineResults(gas, i_species, i_line))
                 return false;
+
+            if(tracer[i_det]->getSubpixelWarning())
+            {
+                cout << "WARNING: level of subpixeling (" << param.getMaxSubpixelLvl() << ") might be too low" << endl;
+                cout << "if required, increase the maximum level of subpixeling with <max_subpixel_lvl> in the command file" << endl;
+            }
+            if(tracer[i_det]->getDetectorShape() == DET_PLANE && (grid->getDataID() == GRID_ID_SPH || grid->getDataID() == GRID_ID_CYL))
+                cout << "HINT: a 'polar' detector should be used for a spherical or cylindrical grid" << endl;
 
             // Increment index for line RT
             i_det++;
